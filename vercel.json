@@ -2,8 +2,52 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/*.py",
-      "use": "@vercel/python"
+      "src": "api/products.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**"]
+      }
+    },
+    {
+      "src": "api/forecast.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**", "models/**"]
+      }
+    },
+    {
+      "src": "api/anomalies.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**", "models/**"]
+      }
+    },
+    {
+      "src": "api/importance.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**", "models/**"]
+      }
+    },
+    {
+      "src": "api/inventory.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**", "models/**"]
+      }
+    },
+    {
+      "src": "api/simulation.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["data/clean.json", "lib/**"]
+      }
     },
     {
       "src": "frontend/package.json",

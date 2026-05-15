@@ -1,0 +1,5 @@
+# Development and testing dependencies — NOT deployed to Vercel
+-r requirements.txt
+hypothesis==6.103.1
+pytest==8.2.2
+pytest-cov==5.0.0
