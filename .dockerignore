@@ -1,0 +1,47 @@
+# Git
+.git/
+.gitignore
+
+# Kiro spec files
+.kiro/
+
+# Test files
+tests/
+.pytest_cache/
+.hypothesis/
+
+# Dev scripts
+scripts/update_tasks.py
+
+# Raw data (not needed at runtime — clean.json is included)
+data/Online Retail.xlsx
+data/*.xlsx
+data/*.csv
+
+# Dev dependencies
+requirements-dev.txt
+
+# Node modules (rebuilt in Docker)
+frontend/node_modules/
+
+# Vite build output (rebuilt in Docker)
+frontend/build/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel / Render config (not needed in container)
+.vercel/
+render.yaml
+
+# Docs
+*.md
+DemandSense_prd.md
