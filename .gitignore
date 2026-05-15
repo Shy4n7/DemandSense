@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Node
+frontend/node_modules/
+frontend/build/
+
+# Data — commit clean.json but NOT the raw Excel source
+data/Online Retail.xlsx
+data/*.xlsx
+data/*.csv
+
+# Models — commit the trained .pkl files (needed for inference)
+# If they exceed GitHub's 100MB file limit, use Git LFS instead
+# models/  ← leave this commented so models/ IS committed
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Vercel
+.vercel/
+
+# Temp scripts
+scripts/update_tasks.py
