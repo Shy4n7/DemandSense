@@ -1,6 +1,15 @@
 {
   "version": 2,
+  "functions": {
+    "api/*.py": {
+      "runtime": "vercel-python@4.3.1"
+    }
+  },
   "builds": [
+    {
+      "src": "api/*.py",
+      "use": "@vercel/python"
+    },
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
@@ -11,8 +20,13 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/build/index.html"
     }
   ]
 }
+
