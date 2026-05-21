@@ -41,7 +41,14 @@ Thumbs.db
 # Vercel / Render config (not needed in container)
 .vercel/
 render.yaml
+vercel.json
 
 # Docs
 *.md
 DemandSense_prd.md
+
+# Leftover files not needed in production image
+app.py
+context_gatherer.py
+breakscan_requirements.txt
+.bob/
