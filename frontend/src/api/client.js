@@ -6,6 +6,10 @@
  * Requirements: 4.9, 8.2, 13.2
  */
 
+// In production (Vercel), set VITE_API_BASE_URL to the Render backend URL.
+// In development, falls back to '' (relative paths hit the local dev server).
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+
 const TIMEOUT_MS = 12_000;
 
 /**
@@ -59,7 +63,7 @@ async function fetchWithTimeout(url, options = {}) {
  * @returns {Promise<Array<{product_id: string, description: string}>>}
  */
 export async function fetchProducts() {
-  return fetchWithTimeout('/api/products');
+  return fetchWithTimeout(`${API_BASE}/api/products`);
 }
 
 /**
@@ -70,7 +74,7 @@ export async function fetchProducts() {
  * @returns {Promise<{product_id: string, forecast: Array, metrics: {mape: number, rmse: number}}>}
  */
 export async function fetchForecast(productId, horizonDays) {
-  return fetchWithTimeout('/api/forecast', {
+  return fetchWithTimeout(`${API_BASE}/api/forecast`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ product_id: productId, horizon_days: horizonDays }),
@@ -84,7 +88,7 @@ export async function fetchForecast(productId, horizonDays) {
  * @returns {Promise<{product_id: string, anomalies: Array, total_anomalies: number}>}
  */
 export async function fetchAnomalies(productId) {
-  return fetchWithTimeout('/api/anomalies', {
+  return fetchWithTimeout(`${API_BASE}/api/anomalies`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ product_id: productId }),
@@ -99,7 +103,7 @@ export async function fetchAnomalies(productId) {
  */
 export async function fetchImportance(productId) {
   const params = new URLSearchParams({ product_id: productId });
-  return fetchWithTimeout(`/api/importance?${params}`);
+  return fetchWithTimeout(`${API_BASE}/api/importance?${params}`);
 }
 
 /**
@@ -127,7 +131,7 @@ export async function fetchInventory(productId, currentStock, leadTime, serviceL
     lead_time: String(leadTime),
     service_level: String(serviceLevel),
   });
-  return fetchWithTimeout(`/api/inventory?${params}`);
+  return fetchWithTimeout(`${API_BASE}/api/inventory?${params}`);
 }
 
 /**
@@ -142,5 +146,5 @@ export async function fetchInventory(productId, currentStock, leadTime, serviceL
  */
 export async function fetchSimulationData(productId) {
   const params = new URLSearchParams({ product_id: productId });
-  return fetchWithTimeout(`/api/simulation?${params}`);
+  return fetchWithTimeout(`${API_BASE}/api/simulation?${params}`);
 }

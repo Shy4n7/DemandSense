@@ -29,6 +29,25 @@ from api.simulation import app as simulation_app
 
 app = Flask(__name__)
 
+# ---------------------------------------------------------------------------
+# CORS — allow the Vercel-hosted frontend to call this Render backend.
+# VITE_ALLOWED_ORIGIN defaults to * so local dev still works.
+# ---------------------------------------------------------------------------
+_ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = _ALLOWED_ORIGIN
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+@app.route("/api/<path:path>", methods=["OPTIONS"])
+def handle_options(path):
+    from flask import Response
+    return Response(status=204)
+
+
 # Merge all routes from each sub-app into the combined app
 for sub_app in (
     products_app,
