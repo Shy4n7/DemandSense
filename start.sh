@@ -4,7 +4,7 @@ set -e
 # Start Gunicorn (Python API) in the background
 gunicorn server:app \
     --bind 127.0.0.1:8000 \
-    --workers 2 \
+    --workers 1 \
     --timeout 120 \
     --log-level info \
     --access-logfile - \
