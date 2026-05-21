@@ -183,6 +183,28 @@ def generate_forecast(product_id: str, horizon_days: int, history: pd.DataFrame)
     results = []
 
     for t in range(horizon_days):
+        # Dynamically recompute lag and rolling features for the current step t
+        # using the accumulated qty_history (which includes previous predictions).
+        n = len(qty_history)
+        
+        lag_1 = qty_history[n - 1] if n >= 1 else 0
+        lag_7 = qty_history[n - 7] if n >= 7 else 0
+        lag_14 = qty_history[n - 14] if n >= 14 else 0
+        
+        window_7 = qty_history[max(0, n - 7): n]
+        rolling_7d_mean = float(np.mean(window_7)) if window_7 else 0.0
+        rolling_7d_std_val = float(np.std(window_7, ddof=1)) if len(window_7) >= 2 else 0.0
+        
+        window_30 = qty_history[max(0, n - 30): n]
+        rolling_30d_mean = float(np.mean(window_30)) if window_30 else 0.0
+        
+        feature_df.at[feature_df.index[t], "lag_1"] = lag_1
+        feature_df.at[feature_df.index[t], "lag_7"] = lag_7
+        feature_df.at[feature_df.index[t], "lag_14"] = lag_14
+        feature_df.at[feature_df.index[t], "rolling_7d_mean"] = rolling_7d_mean
+        feature_df.at[feature_df.index[t], "rolling_7d_std"] = rolling_7d_std_val
+        feature_df.at[feature_df.index[t], "rolling_30d_mean"] = rolling_30d_mean
+
         # Extract the feature row for step t
         row = feature_df.iloc[t]
         X = np.array([[row[col] for col in FEATURE_COLS]])
@@ -213,39 +235,6 @@ def generate_forecast(product_id: str, horizon_days: int, history: pd.DataFrame)
         # Update qty_history with the predicted value so subsequent steps
         # use accurate lag and rolling features.
         qty_history.append(predicted)
-
-        # Update the feature matrix for steps t+1 .. horizon_days-1
-        # by recomputing lag and rolling features for those rows.
-        n = len(qty_history)
-        for future_t in range(t + 1, horizon_days):
-            # The future step index in qty_history is n + (future_t - t - 1)
-            # but we haven't appended those yet; we update the feature_df rows.
-            step_offset = future_t - t  # how many steps ahead of current prediction
-
-            # Recompute lag features relative to the current qty_history length
-            future_n = n + step_offset - 1  # length of qty_history at that future step
-
-            # lag_1: value one step before the future step
-            lag_1 = qty_history[future_n - 1] if future_n >= 1 else 0
-            # lag_7: value 7 steps before the future step
-            lag_7 = qty_history[future_n - 7] if future_n >= 7 else 0
-            # lag_14: value 14 steps before the future step
-            lag_14 = qty_history[future_n - 14] if future_n >= 14 else 0
-
-            # Rolling features over the last 7 / 30 values before the future step
-            window_7 = qty_history[max(0, future_n - 7): future_n]
-            rolling_7d_mean = float(np.mean(window_7)) if window_7 else 0.0
-            rolling_7d_std_val = float(np.std(window_7, ddof=1)) if len(window_7) >= 2 else 0.0
-
-            window_30 = qty_history[max(0, future_n - 30): future_n]
-            rolling_30d_mean = float(np.mean(window_30)) if window_30 else 0.0
-
-            feature_df.at[feature_df.index[future_t], "lag_1"] = lag_1
-            feature_df.at[feature_df.index[future_t], "lag_7"] = lag_7
-            feature_df.at[feature_df.index[future_t], "lag_14"] = lag_14
-            feature_df.at[feature_df.index[future_t], "rolling_7d_mean"] = rolling_7d_mean
-            feature_df.at[feature_df.index[future_t], "rolling_7d_std"] = rolling_7d_std_val
-            feature_df.at[feature_df.index[future_t], "rolling_30d_mean"] = rolling_30d_mean
 
     return results
 
