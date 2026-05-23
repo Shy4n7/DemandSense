@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>📈 DemandSense</h1>
+  <h1>DemandSense</h1>
   <p><strong>Enterprise-Grade Retail Demand Forecasting & Anomaly Detection System</strong></p>
 
   ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
@@ -13,16 +13,16 @@
 
 DemandSense is an AI-powered retail intelligence platform that predicts future sales volume and automatically detects critical business events (such as out-of-stock risks and unseasonal demand spikes). Built to solve real-world retail inventory challenges, it combines a highly responsive React frontend with a scalable Python/Flask machine learning backend.
 
-## ✨ Key Capabilities
+## Key Capabilities
 
-* **🔮 Predictive Forecasting (XGBoost):** Leverages historical sales data, seasonal trends, and lagging indicators to predict future demand across 7, 14, and 30-day horizons with dynamic confidence intervals.
-* **🚨 Automated Anomaly Detection (Isolation Forest):** Unsupervised learning algorithms actively monitor data to flag anomalous sales patterns, categorizing them into high-priority "Act Now" events (stockouts) and "Keep an Eye On" events (demand spikes).
-* **💻 Retail-Optimized Dashboard:** A dark-mode, high-performance UI featuring interactive visualizations (via Recharts) tailored for quick decision-making rather than data overload.
-* **⚙️ Automated CI/CD:** Fully integrated GitHub Actions pipeline ensuring backend unit tests (Pytest) and frontend component tests (Jest) pass before deployment.
+* **Predictive Forecasting (XGBoost):** Leverages historical sales data, seasonal trends, and lagging indicators to predict future demand across 7, 14, and 30-day horizons with dynamic confidence intervals.
+* **Automated Anomaly Detection (Isolation Forest):** Unsupervised learning algorithms actively monitor data to flag anomalous sales patterns, categorizing them into high-priority "Act Now" events (stockouts) and "Keep an Eye On" events (demand spikes).
+* **Retail-Optimized Dashboard:** A dark-mode, high-performance UI featuring interactive visualizations (via Recharts) tailored for quick decision-making rather than data overload.
+* **Automated CI/CD:** Fully integrated GitHub Actions pipeline ensuring backend unit tests (Pytest) and frontend component tests (Jest) pass before deployment.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 graph LR
@@ -36,7 +36,7 @@ graph LR
     end
 ```
 
-### 💻 Technology Stack
+### Technology Stack
 
 **Frontend (Client)**
 * **Core:** React 18, Vite, Node.js
@@ -52,7 +52,7 @@ graph LR
 
 ---
 
-## 🚀 Getting Started Locally
+## Getting Started Locally
 
 DemandSense is designed to be easily reproducible on local machines.
 
@@ -87,7 +87,7 @@ npm run dev
 
 ---
 
-## 🧠 Machine Learning Retraining
+## Machine Learning Retraining
 
 The pre-trained models are included in the repository. However, if you wish to retrain the models from scratch using the underlying data engine:
 
