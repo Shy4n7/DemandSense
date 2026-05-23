@@ -9,6 +9,10 @@
   ![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
 </div>
 
+<div align="center">
+  <h3>🟢 Live Demo: <a href="http://demandsense.duckdns.org">demandsense.duckdns.org</a></h3>
+</div>
+
 <br />
 
 DemandSense is an AI-powered retail intelligence platform that predicts future sales volume and automatically detects critical business events (such as out-of-stock risks and unseasonal demand spikes). Built to solve real-world retail inventory challenges, it combines a highly responsive React frontend with a scalable Python/Flask machine learning backend.
