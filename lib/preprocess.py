@@ -72,14 +72,34 @@ def aggregate_daily(df: pd.DataFrame) -> pd.DataFrame:
     return grouped[["stock_code", "date", "quantity", "unit_price", "description"]]
 
 
+def is_festival_date(target_date) -> int:
+    """Return 1 if the date falls on or near a major Tamil Nadu festival, else 0."""
+    m = target_date.month
+    d = target_date.day
+    # Pongal (Jan 13-15)
+    if m == 1 and d in (13, 14, 15):
+        return 1
+    # Tamil New Year (Apr 13-15)
+    if m == 4 and d in (13, 14, 15):
+        return 1
+    # Ayudha Pooja (Oct 10-12)
+    if m == 10 and d in (10, 11, 12):
+        return 1
+    # Diwali (Oct 18-20, Oct 30-31, Nov 1)
+    if (m == 10 and d in (18, 19, 20, 30, 31)) or (m == 11 and d == 1):
+        return 1
+    return 0
+
+
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Add all 10 engineered feature columns to the aggregated daily DataFrame.
+    """Add all 11 engineered feature columns to the aggregated daily DataFrame.
 
     Features added (Requirements 1.5):
     - day_of_week: 0=Monday … 6=Sunday
     - month: 1–12
     - is_weekend: 1 if day_of_week >= 5, else 0
     - is_month_end: 1 if date is the last day of the month, else 0
+    - is_festival: 1 if date is a major festival, else 0
     - rolling_7d_mean: 7-day rolling mean of quantity per StockCode (min_periods=1)
     - rolling_30d_mean: 30-day rolling mean of quantity per StockCode (min_periods=1)
     - rolling_7d_std: 7-day rolling std of quantity per StockCode (min_periods=1)
@@ -106,6 +126,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df["month"] = df["date"].dt.month                     # 1–12
     df["is_weekend"] = (df["day_of_week"] >= 5).astype(int)
     df["is_month_end"] = df["date"].dt.is_month_end.astype(int)
+    df["is_festival"] = df["date"].apply(is_festival_date)
 
     # Sort by (stock_code, date) so rolling/lag operations are chronologically ordered
     df = df.sort_values(["stock_code", "date"]).reset_index(drop=True)
@@ -201,10 +222,10 @@ def build_future_features(last_known: pd.DataFrame, horizon: int) -> pd.DataFram
 
     This function builds the FEATURE MATRIX only — it does NOT run any model.
 
-    Feature columns produced (10 total):
+    Feature columns produced (11 total):
         lag_1, lag_7, lag_14,
         rolling_7d_mean, rolling_30d_mean, rolling_7d_std,
-        day_of_week, month, is_weekend, is_month_end
+        day_of_week, month, is_weekend, is_month_end, is_festival
 
     Plus a ``date`` column (datetime) for each future step.
 
@@ -246,6 +267,7 @@ def build_future_features(last_known: pd.DataFrame, horizon: int) -> pd.DataFram
         month = target_date.month                     # 1–12
         is_weekend = int(day_of_week >= 5)
         is_month_end = int(target_date.is_month_end)
+        is_festival = is_festival_date(target_date)
 
         # --- Lag features ---
         # qty_history currently has (len(history) + step - 1) entries because
@@ -278,6 +300,7 @@ def build_future_features(last_known: pd.DataFrame, horizon: int) -> pd.DataFram
             "month": month,
             "is_weekend": is_weekend,
             "is_month_end": is_month_end,
+            "is_festival": is_festival,
         })
 
         # Append placeholder quantity (0) so the next step can use it as a lag

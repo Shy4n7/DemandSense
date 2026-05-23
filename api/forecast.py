@@ -48,7 +48,7 @@ logger = logging.getLogger("api.forecast")
 # Constants
 # ---------------------------------------------------------------------------
 
-VALID_HORIZONS = {7, 14, 30}
+VALID_HORIZONS = {7, 14, 30, 365}
 
 # ---------------------------------------------------------------------------
 # Module-level data cache
@@ -155,6 +155,14 @@ def post_forecast():
         forecast = generate_forecast(product_id, horizon_days, history)
         metrics = compute_metrics(product_id, history)
 
+        # Extract history for the frontend graph
+        history_records = []
+        if not history.empty:
+            history_records = [
+                {"date": row["date"].strftime("%Y-%m-%d"), "quantity": int(row["quantity"])}
+                for _, row in history.iterrows()
+            ]
+
     except ModelNotFoundError:
         # Requirement 4.4: product not found → 404
         return jsonify({"error": f"Product '{product_id}' not found"}), 404
@@ -170,4 +178,5 @@ def post_forecast():
         "product_id": product_id,
         "forecast": forecast,
         "metrics": metrics,
+        "history": history_records,
     }), 200

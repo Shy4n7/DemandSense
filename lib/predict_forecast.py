@@ -35,6 +35,7 @@ FEATURE_COLS = [
     "month",
     "is_weekend",
     "is_month_end",
+    "is_festival",
 ]
 
 # ---------------------------------------------------------------------------
@@ -105,6 +106,7 @@ def load_forecast_models(product_id: str):
         ModelLoadError: If any model file exists but cannot be loaded.
     """
     if product_id not in _model_cache:
+        _model_cache.clear()
         point_path = os.path.join(MODELS_DIR, f"xgb_{product_id}.pkl")
         lower_path = os.path.join(MODELS_DIR, f"xgb_lower_{product_id}.pkl")
         upper_path = os.path.join(MODELS_DIR, f"xgb_upper_{product_id}.pkl")
@@ -210,20 +212,28 @@ def generate_forecast(product_id: str, horizon_days: int, history: pd.DataFrame)
         X = np.array([[row[col] for col in FEATURE_COLS]])
 
         # Run all three models
-        predicted = float(point_model.predict(X)[0])
+        predicted_base = float(point_model.predict(X)[0])
         lower_val = float(lower_model.predict(X)[0])
         upper_val = float(upper_model.predict(X)[0])
 
         # Clamp: lower ≤ predicted ≤ upper
-        lower_val = min(lower_val, predicted)
-        upper_val = max(upper_val, predicted)
+        lower_val = min(lower_val, predicted_base)
+        upper_val = max(upper_val, predicted_base)
 
-        # Serialize date to ISO string
+        predicted = predicted_base
+        if row["is_festival"] == 1:
+            predicted = predicted_base * 4.5
+            lower_val *= 4.5
+            upper_val *= 4.5
+
+        # Serialize date to YYYY-MM-DD string
         date_val = row["date"]
-        if hasattr(date_val, "isoformat"):
-            date_str = date_val.isoformat()
+        if hasattr(date_val, "strftime"):
+            date_str = date_val.strftime("%Y-%m-%d")
+        elif hasattr(date_val, "isoformat"):
+            date_str = date_val.isoformat().split("T")[0]
         else:
-            date_str = str(date_val)
+            date_str = str(date_val).split(" ")[0]
 
         results.append({
             "date": date_str,
@@ -232,9 +242,9 @@ def generate_forecast(product_id: str, horizon_days: int, history: pd.DataFrame)
             "upper": upper_val,
         })
 
-        # Update qty_history with the predicted value so subsequent steps
-        # use accurate lag and rolling features.
-        qty_history.append(predicted)
+        # Update qty_history with the baseline predicted value so subsequent steps
+        # don't suffer from exponential compounding feedback loops.
+        qty_history.append(predicted_base)
 
     return results
 

@@ -1,5 +1,5 @@
 /**
- * Task 17.2 — AnomalyTable unit tests
+ * Task 17.2 — AnomalyTable unit tests (updated for retailer-friendly redesign).
  */
 
 import { render, screen, fireEvent, within } from '@testing-library/react';
@@ -50,84 +50,72 @@ describe('AnomalyTable', () => {
   describe('filter chips', () => {
     it('shows all rows when "All" filter is active (default)', () => {
       render(<AnomalyTable anomalies={ANOMALIES} />);
-      // All four dates should be visible
-      expect(screen.getByText('2024-01-10')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-11')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-12')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-13')).toBeInTheDocument();
+      // All four dates should be visible via test ID
+      expect(screen.getByTestId('anomaly-card-2024-01-10')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-11')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-12')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-13')).toBeInTheDocument();
     });
 
     it('filters to only demand_spike rows when "Demand Spike" chip is clicked', () => {
       render(<AnomalyTable anomalies={ANOMALIES} />);
       clickFilterChip('Demand Spike');
-      expect(screen.getByText('2024-01-10')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-13')).toBeInTheDocument();
-      expect(screen.queryByText('2024-01-11')).not.toBeInTheDocument();
-      expect(screen.queryByText('2024-01-12')).not.toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-10')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-13')).toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-11')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-12')).not.toBeInTheDocument();
     });
 
     it('filters to only price_anomaly rows when "Price Anomaly" chip is clicked', () => {
       render(<AnomalyTable anomalies={ANOMALIES} />);
       clickFilterChip('Price Anomaly');
-      expect(screen.getByText('2024-01-11')).toBeInTheDocument();
-      expect(screen.queryByText('2024-01-10')).not.toBeInTheDocument();
-      expect(screen.queryByText('2024-01-12')).not.toBeInTheDocument();
-      expect(screen.queryByText('2024-01-13')).not.toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-11')).toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-10')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-12')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-13')).not.toBeInTheDocument();
     });
 
     it('filters to only stockout_signal rows when "Stockout Signal" chip is clicked', () => {
       render(<AnomalyTable anomalies={ANOMALIES} />);
       clickFilterChip('Stockout Signal');
-      expect(screen.getByText('2024-01-12')).toBeInTheDocument();
-      expect(screen.queryByText('2024-01-10')).not.toBeInTheDocument();
-      expect(screen.queryByText('2024-01-11')).not.toBeInTheDocument();
-      expect(screen.queryByText('2024-01-13')).not.toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-12')).toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-10')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-11')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('anomaly-card-2024-01-13')).not.toBeInTheDocument();
     });
 
     it('returns to showing all rows when "All" chip is clicked after filtering', () => {
       render(<AnomalyTable anomalies={ANOMALIES} />);
       clickFilterChip('Demand Spike');
       clickFilterChip('All');
-      expect(screen.getByText('2024-01-10')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-11')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-12')).toBeInTheDocument();
-      expect(screen.getByText('2024-01-13')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-10')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-11')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-12')).toBeInTheDocument();
+      expect(screen.getByTestId('anomaly-card-2024-01-13')).toBeInTheDocument();
     });
   });
 
   describe('row highlighting', () => {
     it('applies red background class to rows with anomaly_score < -0.1', () => {
-      const { container } = render(<AnomalyTable anomalies={ANOMALIES} />);
-      // The row for 2024-01-10 has score -0.25 → should have bg-red-50
-      const rows = container.querySelectorAll('tbody tr');
-      const redRow = Array.from(rows).find((r) =>
-        r.textContent.includes('2024-01-10')
-      );
-      expect(redRow).toBeDefined();
-      expect(redRow.className).toContain('bg-red-50');
+      render(<AnomalyTable anomalies={ANOMALIES} />);
+      const redCard = screen.getByTestId('anomaly-card-2024-01-10');
+      expect(redCard).toBeDefined();
+      expect(redCard.className).toContain('bg-red-950/20');
     });
 
     it('applies amber background class to rows with -0.1 <= anomaly_score <= 0.0', () => {
-      const { container } = render(<AnomalyTable anomalies={ANOMALIES} />);
-      // 2024-01-11 has score -0.05 → bg-amber-50
-      const rows = container.querySelectorAll('tbody tr');
-      const amberRow = Array.from(rows).find((r) =>
-        r.textContent.includes('2024-01-11')
-      );
-      expect(amberRow).toBeDefined();
-      expect(amberRow.className).toContain('bg-amber-50');
+      render(<AnomalyTable anomalies={ANOMALIES} />);
+      const amberCard = screen.getByTestId('anomaly-card-2024-01-11');
+      expect(amberCard).toBeDefined();
+      expect(amberCard.className).toContain('bg-amber-950/20');
     });
 
     it('applies no highlight class to rows with anomaly_score > 0.0', () => {
-      const { container } = render(<AnomalyTable anomalies={ANOMALIES} />);
-      // 2024-01-13 has score 0.1 → no highlight
-      const rows = container.querySelectorAll('tbody tr');
-      const normalRow = Array.from(rows).find((r) =>
-        r.textContent.includes('2024-01-13')
-      );
-      expect(normalRow).toBeDefined();
-      expect(normalRow.className).not.toContain('bg-red-50');
-      expect(normalRow.className).not.toContain('bg-amber-50');
+      render(<AnomalyTable anomalies={ANOMALIES} />);
+      const normalCard = screen.getByTestId('anomaly-card-2024-01-13');
+      expect(normalCard).toBeDefined();
+      expect(normalCard.className).not.toContain('bg-red-950/20');
+      expect(normalCard.className).not.toContain('bg-amber-950/20');
     });
   });
 

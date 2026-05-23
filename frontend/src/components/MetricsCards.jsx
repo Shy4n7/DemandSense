@@ -1,97 +1,178 @@
-/**
- * MetricsCards — displays MAPE, RMSE, and Total Anomalies metric cards.
- *
- * Requirements: 10.1, 10.2, 10.3, 10.5
- */
-
 import SkeletonLoader from './SkeletonLoader';
 
 /**
- * @param {object} props
- * @param {{ metrics: { mape: number, rmse: number } } | null} props.forecast
- * @param {{ total_anomalies: number } | null} props.anomalies
- * @param {boolean} props.loadingForecast
- * @param {boolean} props.loadingAnomalies
- * @param {string|null} props.errorForecast
- * @param {string|null} props.errorAnomalies
+ * MetricsCards — three clear, plain-English insight cards for the selected product.
+ *
+ * Cards answer:
+ *   1. How much will I sell? (Expected Sales)
+ *   2. Do I need to order more? (Stock Status from inventory API)
+ *   3. How many unusual things happened? (Alerts)
  */
 export default function MetricsCards({
-  forecast = null,
-  anomalies = null,
+  forecast        = null,
+  anomalies       = null,
+  inventory       = null,          // from /api/inventory
   loadingForecast = false,
-  loadingAnomalies = false,
-  errorForecast = null,
-  errorAnomalies = null,
+  loadingAnomalies= false,
+  loadingInventory= false,
+  errorForecast   = null,
+  errorAnomalies  = null,
+  errorInventory  = null,
+  unitPrice       = 0.0,
+  yAxisUnit       = 'quantity',
 }) {
-  const mape = forecast?.metrics?.mape ?? null;
-  const rmse = forecast?.metrics?.rmse ?? null;
   const totalAnomalies = anomalies?.total_anomalies ?? null;
 
-  const cards = [
-    {
-      key: 'mape',
-      label: 'MAPE',
-      value: mape != null ? `${mape.toFixed(2)}%` : null,
-      loading: loadingForecast,
-      error: errorForecast,
-      description: 'Mean Absolute Percentage Error',
-    },
-    {
-      key: 'rmse',
-      label: 'RMSE',
-      value: rmse != null ? rmse.toFixed(2) : null,
-      loading: loadingForecast,
-      error: errorForecast,
-      description: 'Root Mean Squared Error',
-    },
-    {
-      key: 'anomalies',
-      label: 'Total Anomalies',
-      value: totalAnomalies != null ? String(totalAnomalies) : null,
-      loading: loadingAnomalies,
-      error: errorAnomalies,
-      description: 'Flagged anomaly records',
-    },
-  ];
+  // Expected demand for the full horizon
+  let expectedDemand = null;
+  if (forecast?.forecast) {
+    expectedDemand = forecast.forecast.reduce((sum, d) => sum + Math.max(0, Math.round(d.predicted)), 0);
+  }
+
+  const scaleFactor          = yAxisUnit === 'revenue' ? unitPrice : 1.0;
+  const scaledExpectedDemand = expectedDemand != null ? expectedDemand * scaleFactor : null;
+
+  const formatVal = (val) => {
+    if (val == null) return null;
+    return yAxisUnit === 'revenue'
+      ? `₹${Math.round(val).toLocaleString()}`
+      : `${Math.round(val).toLocaleString()} units`;
+  };
+
+  // Stock status from /api/inventory
+  const status          = inventory?.status ?? null;       // "SUFFICIENT" | "REORDER NOW" | "CRITICAL"
+  const suggestedOrder  = inventory?.suggested_order ?? null;
+  const reorderPoint    = inventory?.reorder_point ?? null;
+  const currentStock    = inventory?.current_stock ?? null;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => (
-        <MetricCard
-          key={card.key}
-          label={card.label}
-          value={card.value}
-          description={card.description}
-          loading={card.loading}
-          error={card.error}
-        />
-      ))}
+
+      {/* ---- Card 1: Expected sales ---- */}
+      <MetricCard
+        label="Expected Sales"
+        loading={loadingForecast}
+        error={errorForecast}
+        highlight={false}
+      >
+        {scaledExpectedDemand != null ? (
+          <>
+            <p className="text-3xl font-black text-white">{formatVal(scaledExpectedDemand)}</p>
+            <p className="mt-2 text-xs text-slate-400 leading-snug">
+              This is how much we predict you will sell in the selected period. Use this to decide whether to order more stock.
+            </p>
+          </>
+        ) : (
+          <p className="text-3xl font-black text-slate-500">N/A</p>
+        )}
+      </MetricCard>
+
+      {/* ---- Card 2: Stock status ---- */}
+      <MetricCard
+        label="Stock Status"
+        loading={loadingInventory}
+        error={errorInventory}
+        highlight={status === 'CRITICAL' || status === 'REORDER NOW'}
+        highlightColor={status === 'CRITICAL' ? 'rose' : status === 'REORDER NOW' ? 'amber' : 'emerald'}
+      >
+        {status != null ? (
+          <>
+            <StatusBadge status={status} />
+            {suggestedOrder != null && suggestedOrder > 0 ? (
+              <p className="mt-2 text-xs text-slate-400 leading-snug">
+                Order <span className="font-bold text-slate-200">{Math.round(suggestedOrder)} units</span> to get back to a safe level.
+                {reorderPoint != null && (
+                  <> Trigger reorder when stock falls below <span className="font-bold text-slate-200">{Math.round(reorderPoint)}</span>.</>
+                )}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-slate-400 leading-snug">
+                {currentStock != null
+                  ? `You have ${Math.round(currentStock)} units on hand. No order needed right now.`
+                  : 'Enter your stock level below to get restock advice.'}
+              </p>
+            )}
+          </>
+        ) : (
+          <p className="mt-2 text-xs text-slate-400 leading-snug">
+            Enter your stock level below to get a restock recommendation.
+          </p>
+        )}
+      </MetricCard>
+
+      {/* ---- Card 3: Alerts ---- */}
+      <MetricCard
+        label="Price &amp; Stock Alerts"
+        loading={loadingAnomalies}
+        error={errorAnomalies}
+        highlight={totalAnomalies != null && totalAnomalies > 0}
+        highlightColor="amber"
+      >
+        {totalAnomalies != null ? (
+          <>
+            <p className={`text-3xl font-black ${totalAnomalies > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>
+              {totalAnomalies === 0 ? 'All Clear' : `${totalAnomalies} Alert${totalAnomalies > 1 ? 's' : ''}`}
+            </p>
+            <p className="mt-2 text-xs text-slate-400 leading-snug">
+              {totalAnomalies === 0
+                ? 'No unusual pricing or demand changes were detected for this product.'
+                : 'Unusual pricing or demand patterns were detected. Scroll down to review them.'}
+            </p>
+          </>
+        ) : (
+          <p className="text-3xl font-black text-slate-500">N/A</p>
+        )}
+      </MetricCard>
+
     </div>
   );
 }
 
-function MetricCard({ label, value, description, loading, error }) {
+/* -------------------------------------------------------------------------- */
+/* StatusBadge — big coloured pill for CRITICAL / REORDER NOW / SUFFICIENT    */
+/* -------------------------------------------------------------------------- */
+function StatusBadge({ status }) {
+  const map = {
+    CRITICAL:    { text: 'CRITICAL',     cls: 'bg-rose-600/30 text-rose-200 border-rose-500/40' },
+    'REORDER NOW': { text: 'ORDER SOON', cls: 'bg-amber-600/30 text-amber-200 border-amber-500/40' },
+    SUFFICIENT:  { text: 'STOCK OK',     cls: 'bg-emerald-600/30 text-emerald-200 border-emerald-500/40' },
+  };
+  const { text, cls } = map[status] ?? { text: status, cls: 'bg-slate-700 text-slate-300 border-slate-600' };
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-        {label}
-      </p>
+    <span className={`inline-block rounded-lg border px-3 py-1 text-base font-black uppercase tracking-widest ${cls}`}>
+      {text}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* MetricCard shell                                                            */
+/* -------------------------------------------------------------------------- */
+function MetricCard({ label, children, loading, error, highlight, highlightColor = 'indigo' }) {
+  const colorMap = {
+    rose:    'border-rose-500/20 bg-rose-950/20',
+    amber:   'border-amber-500/20 bg-amber-950/10',
+    emerald: 'border-emerald-500/20 bg-emerald-950/10',
+    indigo:  'border-indigo-500/30 bg-indigo-950/20',
+  };
+  const cardClass = highlight
+    ? colorMap[highlightColor]
+    : 'border-white/10 bg-slate-900/40';
+
+  return (
+    <div className={`rounded-xl border p-5 shadow-sm backdrop-blur-md ${cardClass}`}>
+      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{label}</p>
 
       {loading ? (
-        <div className="mt-3">
+        <div className="mt-3" role="status" aria-label="Loading">
           <SkeletonLoader rows={2} />
         </div>
       ) : error ? (
-        <p className="mt-2 text-sm font-medium text-red-600" role="alert">
-          {error}
-        </p>
+        <p className="mt-3 text-sm font-medium text-red-400" role="alert">{error}</p>
       ) : (
-        <p className="mt-2 text-3xl font-bold text-gray-900">
-          {value ?? 'N/A'}
-        </p>
+        <div className="mt-3">{children}</div>
       )}
-
-      <p className="mt-1 text-xs text-gray-400">{description}</p>
     </div>
   );
 }

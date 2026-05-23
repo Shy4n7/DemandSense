@@ -5,7 +5,19 @@
  * Recharts is mocked to avoid jsdom layout issues.
  */
 
-jest.mock('../api/client');
+jest.mock('../api/client', () => ({
+  fetchProducts: jest.fn(),
+  fetchForecast: jest.fn(),
+  fetchAnomalies: jest.fn(),
+  fetchInventory: jest.fn(),
+  fetchSimulationData: jest.fn(),
+  ApiError: class ApiError extends Error {
+    constructor(status, message) {
+      super(message);
+      this.status = status;
+    }
+  }
+}));
 
 jest.mock('recharts', () => {
   const React = require('react');
@@ -32,18 +44,18 @@ jest.mock('recharts', () => {
   };
 });
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import {
   fetchProducts,
   fetchForecast,
   fetchAnomalies,
-  fetchImportance,
+  fetchInventory,
 } from '../api/client';
 import App from '../App';
 
 const PRODUCTS = [
-  { product_id: 'P001', description: 'Widget Alpha' },
-  { product_id: 'P002', description: 'Gadget Beta' },
+  { product_id: 'P001', description: 'Widget Alpha', unit_price: 10.0, total_volume: 100, total_revenue: 1000, anomaly_count: 0, stockout_warning: false },
+  { product_id: 'P002', description: 'Gadget Beta', unit_price: 20.0, total_volume: 50, total_revenue: 1000, anomaly_count: 1, stockout_warning: false },
 ];
 
 const FORECAST_DATA = {
@@ -61,43 +73,61 @@ const ANOMALIES_DATA = {
   total_anomalies: 0,
 };
 
-const IMPORTANCE_DATA = {
-  product_id: 'P001',
-  features: [{ name: 'lag_7', importance: 0.35 }],
+const INVENTORY_DATA = {
+  product_id:       'P001',
+  forecasted_demand: 90,
+  safety_stock:      15,
+  reorder_point:     105,
+  current_stock:     50,
+  suggested_order:   55,
+  status:            'REORDER NOW',
+  reorder_alert:     true,
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Default: inventory resolves immediately so tests don't hang
+  fetchInventory.mockResolvedValue(INVENTORY_DATA);
 });
 
 describe('App', () => {
-  it('displays "Select a product" prompt before any product is selected (products load empty)', async () => {
+  it('displays Global Overview dashboard when no product is selected (products load empty)', async () => {
     fetchProducts.mockResolvedValue([]);
 
     render(<App />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Select a product to view demand forecasts and anomalies/)
-      ).toBeInTheDocument();
+      // With an empty product list, the Today at a Glance section should render
+      expect(screen.getByText('Today at a Glance')).toBeInTheDocument();
     });
   });
 
-  it('auto-selects the first product on initial load', async () => {
+  it('displays the Global Overview dashboard by default and allows selecting a product', async () => {
     fetchProducts.mockResolvedValue(PRODUCTS);
     fetchForecast.mockResolvedValue(FORECAST_DATA);
     fetchAnomalies.mockResolvedValue(ANOMALIES_DATA);
-    fetchImportance.mockResolvedValue(IMPORTANCE_DATA);
 
     render(<App />);
 
-    // After products load, fetchForecast should be called with the first product
+    // Wait for the dashboard to render product cards
+    await waitFor(() => {
+      expect(screen.getByText('Widget Alpha')).toBeInTheDocument();
+    });
+
+    // Verify fetchForecast has NOT been called automatically
+    expect(fetchForecast).not.toHaveBeenCalled();
+
+    // Select the first product by clicking on it in the product grid
+    fireEvent.click(screen.getByText('Widget Alpha'));
+
+    // Verify that selecting the product triggers forecast and anomaly fetches
     await waitFor(() => {
       expect(fetchForecast).toHaveBeenCalledWith('P001', expect.any(Number));
+      expect(fetchAnomalies).toHaveBeenCalledWith('P001');
     });
   });
 
-  it('displays skeleton loaders in all four regions while fetching', async () => {
+  it('displays skeleton loaders in product selector region while fetching', async () => {
     // Keep products loading indefinitely so we can observe the skeleton state
     fetchProducts.mockReturnValue(new Promise(() => {}));
 
@@ -108,23 +138,27 @@ describe('App', () => {
     expect(loaders.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('shows skeleton loaders in forecast/anomaly/importance regions while data is loading', async () => {
+  it('shows skeleton loaders in forecast/anomaly regions while data is loading', async () => {
     // Products resolve immediately; data fetches stay pending
     fetchProducts.mockResolvedValue(PRODUCTS);
     fetchForecast.mockReturnValue(new Promise(() => {}));
     fetchAnomalies.mockReturnValue(new Promise(() => {}));
-    fetchImportance.mockReturnValue(new Promise(() => {}));
 
     render(<App />);
 
-    // Wait for products to load and auto-select to trigger
+    // Wait for products to load
     await waitFor(() => {
-      expect(fetchForecast).toHaveBeenCalled();
+      expect(screen.getByText('Widget Alpha')).toBeInTheDocument();
     });
 
-    // While the three data fetches are pending, multiple skeleton loaders should be visible
-    const loaders = screen.getAllByRole('status');
-    expect(loaders.length).toBeGreaterThanOrEqual(3);
+    // Click product to select it
+    fireEvent.click(screen.getByText('Widget Alpha'));
+
+    // While the fetches are pending, multiple skeleton loaders should be visible
+    await waitFor(() => {
+      const loaders = screen.getAllByRole('status');
+      expect(loaders.length).toBeGreaterThanOrEqual(2);
+    });
   });
 
   it('retains prior product data when a new request fails', async () => {
@@ -132,29 +166,28 @@ describe('App', () => {
     fetchProducts.mockResolvedValue(PRODUCTS);
     fetchForecast.mockResolvedValue(FORECAST_DATA);
     fetchAnomalies.mockResolvedValue(ANOMALIES_DATA);
-    fetchImportance.mockResolvedValue(IMPORTANCE_DATA);
 
     render(<App />);
 
-    // Wait for initial data to load
+    // Wait for products to load
     await waitFor(() => {
-      expect(fetchForecast).toHaveBeenCalledTimes(1);
+      expect(screen.getByText('Widget Alpha')).toBeInTheDocument();
     });
 
-    // Verify the MAPE metric is shown (data loaded successfully)
+    // Click to select the product
+    fireEvent.click(screen.getByText('Widget Alpha'));
+
+    // Wait for initial data to load and check that the Expected Demand value is shown
     await waitFor(() => {
-      expect(screen.getByText('4.50%')).toBeInTheDocument();
+      // 100 units is the sum of all forecast.predicted values
+      expect(screen.getAllByText('100 units')[0]).toBeInTheDocument();
     });
 
     // Now simulate a second fetch failure (e.g., horizon change)
     fetchForecast.mockRejectedValue(new Error('Network error'));
 
-    // Trigger a horizon change by directly calling the second fetch
-    // The prior MAPE value should still be visible until the new fetch resolves
-    // (The component sets forecast: null on new selection, but retains on horizon change)
-    // We verify the component doesn't crash and the error is surfaced
+    // The component is still mounted and functional
     await waitFor(() => {
-      // The component is still mounted and functional
       expect(screen.getByText('DemandSense')).toBeInTheDocument();
     });
   });

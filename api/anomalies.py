@@ -134,6 +134,8 @@ def post_anomalies():
         logger.exception("Unexpected error scoring anomalies for product '%s'", product_id)
         return jsonify({"error": f"Failed to score anomalies for product '{product_id}': {exc}"}), 500
 
+    anomaly_results = [a for a in anomaly_results if a.get("is_anomaly")]
+
     # Requirement 5.1: total_anomalies equals length of anomalies array
     return jsonify({
         "product_id": product_id,

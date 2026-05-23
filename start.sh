@@ -5,6 +5,7 @@ set -e
 gunicorn server:app \
     --bind 127.0.0.1:8000 \
     --workers 1 \
+    --preload \
     --timeout 120 \
     --log-level info \
     --access-logfile - \

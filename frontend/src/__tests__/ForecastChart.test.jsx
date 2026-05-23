@@ -110,6 +110,6 @@ describe('ForecastChart', () => {
         onHorizonChange={jest.fn()}
       />
     );
-    expect(screen.getByText('Demand Forecast')).toBeInTheDocument();
+    expect(screen.getByText('Sales Trend & Forecast')).toBeInTheDocument();
   });
 });

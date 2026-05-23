@@ -69,6 +69,7 @@ def load_anomaly_model(product_id: str):
         ModelNotFoundError: If the model file does not exist on disk.
     """
     if product_id not in _iso_cache:
+        _iso_cache.clear()
         model_path = os.path.join(MODELS_DIR, f"iso_{product_id}.pkl")
         try:
             model = joblib.load(model_path)
@@ -153,7 +154,8 @@ def _detect_price_anomalies(df: pd.DataFrame) -> pd.Series:
         return pd.Series(False, index=df.index)
 
     median = prices.median()
-    return (prices - median).abs() > 2.5 * std
+    diff = (prices - median).abs()
+    return (diff > 2.5 * std) & (diff > 0.05 * median)
 
 
 def _detect_stockout_signals(df: pd.DataFrame) -> pd.Series:

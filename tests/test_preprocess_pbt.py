@@ -559,10 +559,14 @@ class TestMissingInputFileExit:
         # Feature: demand-sense, Unit test: missing input file exit
         script_path = os.path.join(_PROJECT_ROOT, "scripts", "preprocess.py")
 
+        env = os.environ.copy()
+        env["DEMANDSENSE_DATA_DIR"] = str(tmp_path)
+
         result = subprocess.run(
             [sys.executable, script_path],
             capture_output=True,
             text=True,
+            env=env,
             cwd=str(tmp_path),
         )
 
@@ -580,7 +584,9 @@ class TestMissingInputFileExit:
         import scripts.preprocess as preprocess_script
 
         # Patch the path constants to point to non-existent files
+        monkeypatch.setattr(preprocess_script, "_TAMIL_NADU_PATH", str(tmp_path / "missing.xlsx"))
         monkeypatch.setattr(preprocess_script, "_XLSX_PATH", str(tmp_path / "missing.xlsx"))
+        monkeypatch.setattr(preprocess_script, "_XLSX_PATH_ALT", str(tmp_path / "missing.xlsx"))
         monkeypatch.setattr(preprocess_script, "_CSV_PATH", str(tmp_path / "missing.csv"))
 
         with pytest.raises(SystemExit) as exc_info:

@@ -47,8 +47,8 @@ export default function ProductSelector({
 
   if (error) {
     return (
-      <div className="w-full max-w-sm rounded-lg border border-red-200 bg-red-50 p-3">
-        <p className="text-sm text-red-700">
+      <div className="w-full max-w-sm rounded-lg border border-red-500/30 bg-red-950/20 p-3">
+        <p className="text-sm text-red-300">
           {error} Please refresh the page to try again.
         </p>
       </div>
@@ -77,20 +77,20 @@ export default function ProductSelector({
     <div className="relative w-full max-w-sm" ref={containerRef}>
       <label
         htmlFor="product-search"
-        className="mb-1 block text-sm font-medium text-gray-700"
+        className="mb-1.5 block text-sm font-semibold text-slate-300"
       >
         Product
       </label>
 
       {/* Trigger / search input */}
       <div
-        className="flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 py-2 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+        className="flex cursor-pointer items-center rounded-lg border border-white/10 bg-slate-900/40 px-3 py-2.5 shadow-sm focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all duration-300"
         onClick={() => setIsOpen(true)}
       >
         <input
           id="product-search"
           type="text"
-          className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none"
+          className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 outline-none"
           placeholder={
             selectedLabel
               ? `${selectedLabel.product_id} — ${selectedLabel.description}`
@@ -109,7 +109,7 @@ export default function ProductSelector({
         />
         {/* Chevron */}
         <svg
-          className={`ml-2 h-4 w-4 flex-shrink-0 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`ml-2 h-4 w-4 flex-shrink-0 text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -127,24 +127,24 @@ export default function ProductSelector({
         <ul
           id="product-listbox"
           role="listbox"
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute z-10 mt-1.5 max-h-60 w-full overflow-auto rounded-lg glass-card border border-white/10 py-1 shadow-2xl text-slate-200"
         >
           {filtered.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-gray-500">No products found</li>
+            <li className="px-3 py-2 text-sm text-slate-400">No products found</li>
           ) : (
             filtered.map((p) => (
               <li
                 key={p.product_id}
                 role="option"
                 aria-selected={p.product_id === selectedProduct}
-                className={`cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 ${
+                className={`cursor-pointer px-3 py-2 text-sm transition-colors duration-200 ${
                   p.product_id === selectedProduct
-                    ? 'bg-blue-50 font-medium text-blue-700'
-                    : 'text-gray-900'
+                    ? 'bg-indigo-600/20 font-medium text-indigo-300 border-l-2 border-indigo-500'
+                    : 'hover:bg-indigo-600/30 hover:text-white text-slate-200'
                 }`}
                 onClick={() => handleSelect(p.product_id)}
               >
-                <span className="font-mono text-xs text-gray-500">{p.product_id}</span>
+                <span className="font-mono text-xs text-indigo-400 font-semibold">{p.product_id}</span>
                 {' — '}
                 {p.description}
               </li>

@@ -10,7 +10,7 @@
 // In development, falls back to '' (relative paths hit the local dev server).
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
-const TIMEOUT_MS = 12_000;
+const TIMEOUT_MS = 60_000;
 
 /**
  * Typed error for non-2xx API responses.
@@ -60,7 +60,15 @@ async function fetchWithTimeout(url, options = {}) {
 /**
  * Fetch the list of available products.
  * GET /api/products
- * @returns {Promise<Array<{product_id: string, description: string}>>}
+ * @returns {Promise<Array<{
+ *   product_id: string,
+ *   description: string,
+ *   unit_price: number,
+ *   total_volume: number,
+ *   total_revenue: number,
+ *   anomaly_count: number,
+ *   stockout_warning: boolean
+ * }>>}
  */
 export async function fetchProducts() {
   return fetchWithTimeout(`${API_BASE}/api/products`);

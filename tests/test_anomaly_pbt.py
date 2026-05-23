@@ -546,6 +546,7 @@ class TestShortDataProductSkip:
             "month": [d.month for d in dates],
             "is_weekend": [int(d.weekday() >= 5) for d in dates],
             "is_month_end": [0] * n_days,
+            "is_festival": [0] * n_days,
             "rolling_7d_mean": [5.0] * n_days,
             "rolling_30d_mean": [5.0] * n_days,
             "rolling_7d_std": [1.0] * n_days,

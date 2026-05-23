@@ -24,8 +24,7 @@ requirements-dev.txt
 # Node modules (rebuilt in Docker)
 frontend/node_modules/
 
-# Vite build output (rebuilt in Docker)
-frontend/build/
+
 
 # Python cache
 __pycache__/

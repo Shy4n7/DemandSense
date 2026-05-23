@@ -41,19 +41,40 @@ from lib.preprocess import (
 # ---------------------------------------------------------------------------
 # File paths
 # ---------------------------------------------------------------------------
-_XLSX_PATH = os.path.join(_PROJECT_ROOT, "data", "online_retail.xlsx")
-_XLSX_PATH_ALT = os.path.join(_PROJECT_ROOT, "data", "Online Retail.xlsx")
-_CSV_PATH = os.path.join(_PROJECT_ROOT, "data", "online_retail.csv")
-_OUTPUT_PATH = os.path.join(_PROJECT_ROOT, "data", "clean.json")
+_DATA_DIR = os.environ.get("DEMANDSENSE_DATA_DIR", os.path.join(_PROJECT_ROOT, "data"))
+_TAMIL_NADU_PATH = os.path.join(_DATA_DIR, "TamilNadu_Retail_Dataset_2023_2024.xlsx")
+_XLSX_PATH = os.path.join(_DATA_DIR, "online_retail.xlsx")
+_XLSX_PATH_ALT = os.path.join(_DATA_DIR, "Online Retail.xlsx")
+_CSV_PATH = os.path.join(_DATA_DIR, "online_retail.csv")
+_OUTPUT_PATH = os.path.join(_DATA_DIR, "clean.json")
 
 
 def _load_input() -> pd.DataFrame:
-    """Load the UCI dataset from xlsx (preferred) or csv fallback.
+    """Load the dataset (Tamil Nadu preferred, then UCI xlsx, then csv fallback).
 
     Returns the raw DataFrame on success.
-    Prints an error and calls sys.exit(1) if neither file is found or readable.
+    Prints an error and calls sys.exit(1) if no file is found or readable.
     """
-    # Try xlsx first (both naming conventions), then csv
+    # 1. Try the custom Tamil Nadu dataset first
+    if os.path.exists(_TAMIL_NADU_PATH):
+        try:
+            df = pd.read_excel(_TAMIL_NADU_PATH)
+            # Map the Tamil Nadu schema to the expected UCI schema
+            df = df.rename(columns={
+                "date": "InvoiceDate",
+                "product_id": "StockCode",
+                "product_name": "Description",
+                "quantity": "Quantity",
+                "unit_price": "UnitPrice"
+            })
+            # Add a dummy InvoiceNo so the cancellation filter in clean_transactions doesn't fail
+            df["InvoiceNo"] = "1"
+            return df
+        except Exception as exc:
+            print(f"ERROR: Could not read '{_TAMIL_NADU_PATH}': {exc}", file=sys.stderr)
+            sys.exit(1)
+
+    # 2. Try the original UCI dataset
     for path in (_XLSX_PATH, _XLSX_PATH_ALT, _CSV_PATH):
         if os.path.exists(path):
             try:
@@ -72,10 +93,11 @@ def _load_input() -> pd.DataFrame:
     # Neither file exists
     print(
         f"ERROR: Input file not found. Looked for:\n"
+        f"  {_TAMIL_NADU_PATH}\n"
         f"  {_XLSX_PATH}\n"
         f"  {_XLSX_PATH_ALT}\n"
         f"  {_CSV_PATH}\n"
-        "Please place the UCI Online Retail Dataset in the data/ directory.",
+        "Please place a valid dataset in the data/ directory.",
         file=sys.stderr,
     )
     sys.exit(1)

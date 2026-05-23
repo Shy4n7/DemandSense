@@ -46,7 +46,7 @@ MIN_DAYS_FOR_TRAINING = 60
 FEATURE_COLS = [
     "lag_1", "lag_7", "lag_14",
     "rolling_7d_mean", "rolling_30d_mean", "rolling_7d_std",
-    "day_of_week", "month", "is_weekend", "is_month_end",
+    "day_of_week", "month", "is_weekend", "is_month_end", "is_festival"
 ]
 TARGET_COL = "quantity"
 
@@ -148,8 +148,11 @@ def main() -> None:
     with open(_DATA_PATH, "r") as f:
         records = json.load(f)
 
+    import gc
     df_all = pd.DataFrame(records)
     df_all["date"] = pd.to_datetime(df_all["date"])
+    del records
+    gc.collect()
 
     product_ids = df_all["stock_code"].unique()
     logger.info("Found %d products to train.", len(product_ids))
@@ -157,6 +160,8 @@ def main() -> None:
     for pid in sorted(product_ids):
         product_df = df_all[df_all["stock_code"] == pid].copy()
         train_product(pid, product_df)
+        del product_df
+        gc.collect()
 
     logger.info("Training complete.")
 

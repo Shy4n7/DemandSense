@@ -79,14 +79,15 @@ def train_product(product_id: str, df: pd.DataFrame) -> None:
     df = df.sort_values("date").reset_index(drop=True)
     X = df[["quantity", "unit_price"]].values
 
-    # Train Isolation Forest (Requirement 3.1)
-    model = IsolationForest(contamination=0.05, random_state=42)
-    model.fit(X)
+    # We use a very low contamination rate (0.3%) so only severe anomalies are flagged.
+    # Over 731 days, 0.003 * 731 = ~2 anomalies per product total.
+    iso = IsolationForest(contamination=0.003, random_state=42)
+    iso.fit(X)
 
     # Serialize model (Requirement 3.6)
     os.makedirs(_MODELS_DIR, exist_ok=True)
     model_path = os.path.join(_MODELS_DIR, f"iso_{product_id}.pkl")
-    joblib.dump(model, model_path)
+    joblib.dump(iso, model_path)
 
     logger.info("Isolation Forest for product '%s' saved to %s.", product_id, model_path)
 
@@ -106,8 +107,11 @@ def main() -> None:
     with open(_DATA_PATH, "r") as f:
         records = json.load(f)
 
+    import gc
     df_all = pd.DataFrame(records)
     df_all["date"] = pd.to_datetime(df_all["date"])
+    del records
+    gc.collect()
 
     product_ids = df_all["stock_code"].unique()
     logger.info("Found %d products to train.", len(product_ids))
@@ -115,6 +119,8 @@ def main() -> None:
     for pid in sorted(product_ids):
         product_df = df_all[df_all["stock_code"] == pid].copy()
         train_product(pid, product_df)
+        del product_df
+        gc.collect()
 
     logger.info("Anomaly model training complete.")
 
