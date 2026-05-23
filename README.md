@@ -31,7 +31,6 @@ Ensure you have Python 3.10+ installed.
 pip install -r requirements.txt
 python server.py
 ```
-The Flask API will run on `http://localhost:8000`.
 
 ### 3. Start the Frontend (Node/React)
 Open a new terminal window:
@@ -40,7 +39,6 @@ cd frontend
 npm install
 npm run dev
 ```
-The dashboard will open at `http://localhost:5173`.
 
 ## ML Training
 If you wish to retrain the models from scratch on the dataset:
