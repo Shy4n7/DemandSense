@@ -1,15 +1,15 @@
-# DemandSense 📈
+# DemandSense
 
 An AI-powered retail and store management dashboard designed to help retailers forecast future demand and detect unusual sales anomalies (like unexpected spikes or stockouts).
 
-## 🚀 Key Features
+## Key Features
 
 * **Demand Forecasting:** Predicts future sales for the next 7, 14, or 30 days using historical data.
 * **Anomaly Detection:** Automatically flags "Act Now" events (like unexpected stockouts) and "Keep an Eye On" events (like sudden demand spikes) using machine learning.
 * **Retailer-Friendly UI:** A clean, dark-mode dashboard that focuses on recent activity and actionable insights rather than overwhelming the user with raw data.
 * **Interactive Charts:** Smooth visualizations to compare past actual sales with future predicted sales.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Frontend:** React, Vite, TailwindCSS, Recharts
 * **Backend:** Python, Flask, Pandas, NumPy
@@ -17,13 +17,7 @@ An AI-powered retail and store management dashboard designed to help retailers f
   * **XGBoost** for Demand Forecasting (predicts point estimates as well as upper/lower confidence bounds).
   * **Isolation Forest** for Anomaly Detection (identifies statistical outliers in sales volume).
 
-## 📊 Dataset Note
-
-This repository includes a curated dataset (`clean.json`) built specifically for a clean presentation and internship showcase. 
-* Background noise and erratic price fluctuations have been smoothed out to reflect realistic inflation curves.
-* Clear, undeniable anomalies (one demand spike and one stockout per key product) have been seeded in the most recent period (December 2024) to perfectly demonstrate the AI's detection capabilities without clutter.
-
-## 💻 How to Run Locally
+## How to Run Locally
 
 ### 1. Clone the repository
 ```bash
@@ -48,7 +42,7 @@ npm run dev
 ```
 The dashboard will open at `http://localhost:5173`.
 
-## 🧠 ML Training (Optional)
+## ML Training
 If you wish to retrain the models from scratch on the dataset:
 ```bash
 # Train the XGBoost forecasting models
