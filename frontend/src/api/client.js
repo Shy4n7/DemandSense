@@ -7,8 +7,11 @@
  */
 
 // In production (Vercel), set VITE_API_BASE_URL to the Render backend URL.
-// In development, falls back to '' (relative paths hit the local dev server).
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+// If the env var is missing, fall back to the current Render service so the
+// deployed dashboard still talks to the live backend.
+const DEFAULT_PRODUCTION_API_BASE = 'https://demandsense-5ej8.onrender.com';
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = (configuredApiBase || (import.meta.env.PROD ? DEFAULT_PRODUCTION_API_BASE : '')).replace(/\/$/, '');
 
 const TIMEOUT_MS = 60_000;
 
