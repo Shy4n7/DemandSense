@@ -355,9 +355,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 pb-12">
 
-      {/* Top bar */}
       <header className="border-b border-white/10 bg-slate-950/40 backdrop-blur-md px-6 py-4 shadow-lg sticky top-0 z-50">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex flex-col sm:flex-row max-w-7xl sm:items-center justify-between gap-2">
           <div>
             <h1 className="text-xl font-bold text-white">DemandSense</h1>
             <p className="text-xs text-slate-500 mt-0.5">Store Management Dashboard</p>
@@ -374,18 +373,20 @@ export default function App() {
       <main className="mx-auto max-w-7xl px-6 py-6 space-y-6">
 
         {/* Product selector row */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <ProductSelector
-            products={products}
-            selectedProduct={selectedProduct}
-            onSelect={handleProductSelect}
-            loading={loading.products}
-            error={errors.products}
-          />
-          <div className="pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+          <div className="w-full sm:max-w-sm">
+            <ProductSelector
+              products={products}
+              selectedProduct={selectedProduct}
+              onSelect={handleProductSelect}
+              loading={loading.products}
+              error={errors.products}
+            />
+          </div>
+          <div>
             <button
               onClick={() => setState((prev) => ({ ...prev, selectedProduct: null }))}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+              className={`w-full sm:w-auto px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
                 selectedProduct === null
                   ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.25)]'
                   : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white'

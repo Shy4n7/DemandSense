@@ -40,10 +40,14 @@ export default function AnomalyTable({
     ? anomalies
     : (anomalies?.anomalies ?? []);
 
-  // Only show anomalies from the last 30 days (assume "today" is the end of the dataset, 2024-12-31)
+  // Only show anomalies from the last 30 days (assume "today" is the maximum date in the dataset, defaulting to 2024-12-31)
+  const maxDateMs = anomalyRows.length > 0
+    ? Math.max(...anomalyRows.map((a) => new Date(a.date).getTime()))
+    : new Date('2024-12-31').getTime();
+
   const recentAnomalyRows = anomalyRows.filter((a) => {
     const anomalyDate = new Date(a.date);
-    const cutoffDate = new Date('2024-12-01');
+    const cutoffDate = new Date(maxDateMs - 30 * 24 * 60 * 60 * 1000);
     return anomalyDate >= cutoffDate;
   });
 

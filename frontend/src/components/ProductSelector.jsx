@@ -39,7 +39,7 @@ export default function ProductSelector({
 
   if (loading) {
     return (
-      <div className="w-full max-w-sm">
+      <div className="w-full">
         <SkeletonLoader rows={2} />
       </div>
     );
@@ -47,7 +47,7 @@ export default function ProductSelector({
 
   if (error) {
     return (
-      <div className="w-full max-w-sm rounded-lg border border-red-500/30 bg-red-950/20 p-3">
+      <div className="w-full rounded-lg border border-red-500/30 bg-red-950/20 p-3">
         <p className="text-sm text-red-300">
           {error} Please refresh the page to try again.
         </p>
@@ -74,7 +74,7 @@ export default function ProductSelector({
   }
 
   return (
-    <div className="relative w-full max-w-sm" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef}>
       <label
         htmlFor="product-search"
         className="mb-1.5 block text-sm font-semibold text-slate-300"
