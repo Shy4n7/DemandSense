@@ -17,7 +17,9 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from flask import Flask
+from flask import Response
 from flask import jsonify
+from flask import request
 
 # Import the individual Flask apps and re-register their routes
 # on a single combined app using blueprints.
@@ -36,6 +38,11 @@ app = Flask(__name__)
 # ---------------------------------------------------------------------------
 _ALLOWED_ORIGIN = os.environ.get("ALLOWED_ORIGIN", "*")
 
+@app.before_request
+def handle_cors_preflight():
+    if request.method == "OPTIONS":
+        return Response(status=204)
+
 @app.after_request
 def add_cors_headers(response):
     response.headers["Access-Control-Allow-Origin"] = _ALLOWED_ORIGIN
@@ -45,7 +52,6 @@ def add_cors_headers(response):
 
 @app.route("/api/<path:path>", methods=["OPTIONS"])
 def handle_options(path):
-    from flask import Response
     return Response(status=204)
 
 
