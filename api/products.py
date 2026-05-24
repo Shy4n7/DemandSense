@@ -129,9 +129,15 @@ def get_products():
         reverse=True,
     )
 
+    # Group records by stock_code first to avoid O(N*P) list comprehension bottleneck
+    from collections import defaultdict
+    grouped_records = defaultdict(list)
+    for r in records:
+        grouped_records[r.get("stock_code")].append(r)
+
     result = []
     for pid in sorted_products:
-        product_records = [r for r in records if r.get("stock_code") == pid]
+        product_records = grouped_records[pid]
         
         # Calculate anomaly count and stockout warning (consecutive zeros in last 14 days)
         total_anoms = 0

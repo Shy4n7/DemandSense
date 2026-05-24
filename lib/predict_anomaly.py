@@ -69,7 +69,8 @@ def load_anomaly_model(product_id: str):
         ModelNotFoundError: If the model file does not exist on disk.
     """
     if product_id not in _iso_cache:
-        _iso_cache.clear()
+        if len(_iso_cache) >= 100:
+            _iso_cache.clear()
         model_path = os.path.join(MODELS_DIR, f"iso_{product_id}.pkl")
         try:
             model = joblib.load(model_path)

@@ -106,7 +106,8 @@ def load_forecast_models(product_id: str):
         ModelLoadError: If any model file exists but cannot be loaded.
     """
     if product_id not in _model_cache:
-        _model_cache.clear()
+        if len(_model_cache) >= 100:
+            _model_cache.clear()
         point_path = os.path.join(MODELS_DIR, f"xgb_{product_id}.pkl")
         lower_path = os.path.join(MODELS_DIR, f"xgb_lower_{product_id}.pkl")
         upper_path = os.path.join(MODELS_DIR, f"xgb_upper_{product_id}.pkl")
