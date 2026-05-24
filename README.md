@@ -1,148 +1,166 @@
 <div align="center">
   <h1>DemandSense</h1>
-  <p><strong>Enterprise-Grade Retail Demand Forecasting & Anomaly Detection System</strong></p>
+  <p><strong>AI-powered retail demand forecasting, anomaly detection, and inventory decision support</strong></p>
 
   ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
   ![React](https://img.shields.io/badge/React-18-blue.svg)
+  ![Flask](https://img.shields.io/badge/Flask-API-black.svg)
   ![XGBoost](https://img.shields.io/badge/XGBoost-Forecasting-green.svg)
-  ![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-brightgreen.svg)
+  ![Scikit--Learn](https://img.shields.io/badge/Scikit--Learn-ML-orange.svg)
   ![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)
 </div>
 
 <div align="center">
-  <h3>Live Demo: <a href="https://demand-sense-w4ba.vercel.app">demand-sense-w4ba.vercel.app</a></h3>
-  <p>Backend API: <a href="https://demandsense-5ej8.onrender.com">demandsense-5ej8.onrender.com</a></p>
+  <h3><a href="https://demand-sense-w4ba.vercel.app">Live Demo</a></h3>
 </div>
-
-<br />
-
-DemandSense is an AI-powered retail intelligence platform that predicts future sales volume and automatically detects critical business events, such as out-of-stock risks and unseasonal demand spikes. Built to solve real-world retail inventory challenges, it combines a highly responsive React frontend with a scalable Python/Flask machine learning backend.
-
-## Key Capabilities
-
-* **Predictive Forecasting (XGBoost):** Leverages historical sales data, seasonal trends, and lagging indicators to predict future demand across 7, 14, and 30-day horizons with dynamic confidence intervals.
-* **Automated Anomaly Detection (Isolation Forest):** Unsupervised learning algorithms actively monitor data to flag anomalous sales patterns, categorizing them into high-priority "Act Now" events (stockouts) and "Keep an Eye On" events (demand spikes).
-* **Retail-Optimized Dashboard:** A dark-mode, high-performance UI featuring interactive visualizations via Recharts, tailored for quick decision-making rather than data overload.
-* **Automated CI/CD:** Fully integrated GitHub Actions pipeline ensuring backend unit tests (Pytest) and frontend component tests (Jest) pass before deployment.
 
 ---
 
-## System Architecture
+## Overview
+
+DemandSense is a full-stack machine learning application that helps retail teams anticipate product demand, detect unusual sales behavior, and make faster inventory decisions. It combines a React dashboard with a Python/Flask inference backend and pre-trained machine learning models for forecasting and anomaly detection.
+
+The project is designed as a practical retail intelligence system: instead of only showing charts, it turns sales history into operational signals such as expected demand, stock risk, reorder guidance, anomaly alerts, and model explainability.
+
+## Why This Project Matters
+
+Retail inventory planning is a high-impact forecasting problem. Ordering too little creates stockouts and lost revenue; ordering too much creates excess inventory and cash-flow pressure. DemandSense addresses this by combining time-series forecasting, anomaly detection, and inventory planning into one interactive dashboard.
+
+This project demonstrates the ability to build beyond a model notebook: data preparation, trained model artifacts, API design, frontend state management, testing, deployment readiness, and a polished user experience all work together as one product.
+
+## Highlights
+
+* **Demand Forecasting:** Predicts future product demand using XGBoost models trained on historical sales patterns.
+* **Anomaly Detection:** Flags unusual demand spikes and stockout-like behavior with Isolation Forest models.
+* **Inventory Decision Support:** Calculates safety stock, reorder points, current stock status, and suggested order quantities.
+* **Model Explainability:** Surfaces feature-importance insights so forecasts are easier to interpret.
+* **Interactive Dashboard:** Provides product selection, KPI cards, forecast visualizations, anomaly tables, and inventory planning controls.
+* **Production-Oriented Structure:** Separates frontend, backend, data processing, model inference, tests, and deployment assets.
+
+## Demo Experience
+
+The dashboard is built for quick retail decision-making:
+
+* Select a product and view expected demand.
+* Compare forecasted demand against recent historical sales.
+* Identify products with demand anomalies or stockout signals.
+* Adjust inventory inputs such as current stock and lead time.
+* Review reorder recommendations and stock-risk status.
+
+## Tech Stack
+
+**Frontend**
+* React 18
+* Vite
+* TailwindCSS
+* Recharts
+* Jest and React Testing Library
+
+**Backend and ML**
+* Python 3.11
+* Flask
+* Gunicorn
+* Pandas and NumPy
+* XGBoost
+* Scikit-learn
+* Pytest and Hypothesis
+
+**Deployment and Engineering**
+* Docker-ready backend
+* Vercel-ready frontend
+* Render-compatible Flask service
+* Modular API handlers
+* Cached model/data loading for faster inference
+
+## Architecture
 
 ```mermaid
 graph LR
-    A[React/Vite Frontend] -->|REST API| B(Flask Backend)
-    B --> C[(JSON/Data Lake)]
-    B --> D[ML Inference Engine]
+    A[React Dashboard] --> B[Flask API]
+    B --> C[Clean Sales Dataset]
+    B --> D[Forecast Models]
+    B --> E[Anomaly Models]
+    B --> F[Inventory Logic]
 
-    subgraph Machine Learning Pipeline
-    D --> E[XGBoost Forecasting]
-    D --> F[Isolation Forest]
-    end
+    D --> G[XGBoost Predictions]
+    E --> H[Isolation Forest Alerts]
+    F --> I[Reorder Recommendations]
 ```
 
-### Technology Stack
+## Machine Learning Workflow
 
-**Frontend (Client)**
-* **Core:** React 18, Vite, Node.js
-* **Styling:** TailwindCSS
-* **Visualizations:** Recharts
-* **Testing:** Jest, React Testing Library
+DemandSense includes an end-to-end workflow for turning raw retail transactions into decision-ready predictions:
 
-**Backend & Data Science (Server)**
-* **Core:** Python 3.11, Flask, Gunicorn
-* **Data Processing:** Pandas, NumPy
-* **Machine Learning:** Scikit-Learn (Isolation Forest), XGBoost
-* **Testing:** Pytest, Hypothesis (Property-based testing)
+1. Clean and aggregate sales history into product-level daily demand records.
+2. Engineer time-series features such as lag values, rolling statistics, and seasonal indicators.
+3. Train XGBoost models for demand forecasting.
+4. Train Isolation Forest models for anomaly detection.
+5. Serialize trained model artifacts for API inference.
+6. Serve predictions through Flask endpoints consumed by the React dashboard.
 
----
+## Project Structure
 
-## Getting Started Locally
+```text
+DemandSense/
+|-- api/                 # Flask API handlers
+|-- data/                # Processed demand dataset
+|-- frontend/            # React/Vite dashboard
+|-- lib/                 # Forecasting, anomaly, inventory, and preprocessing logic
+|-- models/              # Serialized ML model artifacts
+|-- scripts/             # Training and preprocessing scripts
+|-- tests/               # Backend, property-based, and smoke tests
+|-- server.py            # Combined Flask app for deployment
+`-- Dockerfile           # Containerized backend/runtime setup
+```
 
-DemandSense is designed to be easily reproducible on local machines.
+## Getting Started
 
-### 1. Backend Setup
+### Backend
 
 ```bash
-# Clone the repository
 git clone https://github.com/Shy4n7/DemandSense.git
 cd DemandSense
-
-# Install Python dependencies
 pip install -r requirements.txt
-
-# Start the Flask API server
 python server.py
 ```
 
-The API will be available at `http://localhost:8000`.
-
-### 2. Frontend Setup
-
-Open a new terminal window:
+### Frontend
 
 ```bash
 cd frontend
-
-# Install Node dependencies
 npm install
-
-# Start the Vite development server
 npm run dev
 ```
 
-The interactive dashboard will be available at `http://localhost:5173`.
-
----
-
-## Deployment
-
-DemandSense is deployed as two services:
-
-* **Frontend:** Vercel serves the React/Vite dashboard from `frontend/`.
-* **Backend:** Render serves the Flask/Gunicorn API from `server.py`.
-
-### Frontend Environment
-
-Set this environment variable in Vercel so the dashboard calls the Render API:
+## Testing
 
 ```bash
-VITE_API_BASE_URL=https://demandsense-5ej8.onrender.com
+# Backend tests
+pytest
+
+# Frontend tests
+cd frontend
+npm test
 ```
 
-The frontend also has a production fallback to the same Render URL, but setting the variable explicitly is recommended for future backend URL changes.
-
-### Backend Health Check
-
-Use the lightweight health endpoint for uptime monitors and auto pingers:
-
-```text
-https://demandsense-5ej8.onrender.com/api/health
-```
-
-The backend also exposes `/health`. Prefer HTTPS URLs in pingers; using `http://` may produce a `301 Moved Permanently` redirect that some monitors report as a failure.
-
-### CORS Notes
-
-The backend handles CORS preflight requests before API validation. This is required for browser POST requests such as:
-
-* `POST /api/forecast`
-* `POST /api/anomalies`
-
-If the deployed dashboard shows `Failed to fetch` for forecast or anomaly data, first confirm Render has redeployed the latest `main` branch and that `OPTIONS /api/forecast` returns `204`.
-
----
-
-## Machine Learning Retraining
-
-The pre-trained models are included in the repository. However, if you wish to retrain the models from scratch using the underlying data engine:
+## Model Retraining
 
 ```bash
-# Execute the automated feature engineering and model training pipeline
 python scripts/train_forecast.py
-
-# Execute the unsupervised anomaly detection training pipeline
 python scripts/train_anomaly.py
 ```
 
-Artifacts are automatically serialized and saved to the `/models` directory.
+## Skills Demonstrated
+
+* Full-stack product engineering with React and Flask
+* Machine learning model training and inference integration
+* Time-series feature engineering for retail demand data
+* Anomaly detection for operational risk signals
+* API design for ML-powered applications
+* Frontend data visualization and dashboard UX
+* Automated testing across backend and frontend layers
+* Deployment-ready project organization
+
+## Resume Summary
+
+Built an end-to-end retail intelligence platform that forecasts product demand, detects sales anomalies, and recommends inventory actions using React, Flask, XGBoost, Scikit-learn, and Docker-ready deployment architecture.
