@@ -10,7 +10,7 @@
 </div>
 
 <div align="center">
-  <h3>🟢 Live Demo: <a href="https://demand-sense-w4ba-887cv5nvu-shyanpaul7-5953s-projects.vercel.app/">demandsense</a></h3>
+  <h3>🟢 Live Demo: <a href="https://demand-sense-w4ba-887cv5nvu-shyanpaul7-5953s-projects.vercel.app/">DemandSense</a></h3>
 </div>
 
 <br />
