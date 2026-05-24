@@ -17,6 +17,7 @@ if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from flask import Flask
+from flask import jsonify
 
 # Import the individual Flask apps and re-register their routes
 # on a single combined app using blueprints.
@@ -46,6 +47,12 @@ def add_cors_headers(response):
 def handle_options(path):
     from flask import Response
     return Response(status=204)
+
+
+@app.route("/health", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "ok"}), 200
 
 
 # Merge all routes from each sub-app into the combined app
