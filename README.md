@@ -1,3 +1,7 @@
+<img width="1774" height="887" alt="ChatGPT Image Aug 20, 2026, 02_49_49 PM" src="https://github.com/user-attachments/assets/d0849701-4e05-4326-ab0a-5b6d00b208b0" />
+
+
+
 <div align="center">
   <h1>DemandSense</h1>
   <p><strong>Enterprise-Grade Retail Demand Forecasting & Anomaly Detection System</strong></p>
